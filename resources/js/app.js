@@ -380,15 +380,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function handleImageFile(file) {
         const reader = new FileReader();
-        reader.onload = (event) => {
-            previewPhoto.src = event.target.result;
-            previewPhoto.classList.remove('hidden');
-            placeholderMsg.classList.add('hidden');
-            
-            previewPhoto.onload = () => {
-                imageLoaded = true;
-                initializePhotoTransform();
-            };
+        reader.onload = async (event) => {
+            try {
+                const compressed = await compressImage(event.target.result);
+                previewPhoto.src = compressed;
+                previewPhoto.classList.remove('hidden');
+                placeholderMsg.classList.add('hidden');
+                
+                previewPhoto.onload = () => {
+                    imageLoaded = true;
+                    initializePhotoTransform();
+                };
+            } catch (err) {
+                console.error("Compression error:", err);
+                alert("Gagal memproses gambar.");
+            }
         };
         reader.readAsDataURL(file);
     }
@@ -408,35 +414,39 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!file.type.startsWith('image/')) return;
             
             const reader = new FileReader();
-            reader.onload = (event) => {
-                const base64Data = event.target.result;
-                polaroidPhotos[index] = base64Data;
-                
-                // Update HTML slot UI
-                const slotDiv = document.querySelector(`[data-slot="${index}"]`);
-                if (slotDiv) {
-                    const slotImg = slotDiv.querySelector('img:not([data-frame-overlay])');
-                    const frameOverlay = slotDiv.querySelector('img[data-frame-overlay]');
-                    const slotSpan = slotDiv.querySelector('span');
+            reader.onload = async (event) => {
+                try {
+                    const compressedBase64 = await compressImage(event.target.result);
+                    polaroidPhotos[index] = compressedBase64;
                     
-                    if (slotImg) {
-                        slotImg.src = base64Data;
-                        slotImg.classList.remove('hidden');
+                    // Update HTML slot UI
+                    const slotDiv = document.querySelector(`[data-slot="${index}"]`);
+                    if (slotDiv) {
+                        const slotImg = slotDiv.querySelector('img:not([data-frame-overlay])');
+                        const frameOverlay = slotDiv.querySelector('img[data-frame-overlay]');
+                        const slotSpan = slotDiv.querySelector('span');
+                        
+                        if (slotImg) {
+                            slotImg.src = compressedBase64;
+                            slotImg.classList.remove('hidden');
+                        }
+                        if (frameOverlay) {
+                            frameOverlay.classList.remove('hidden');
+                        }
+                        if (slotSpan) slotSpan.classList.add('hidden');
                     }
-                    if (frameOverlay) {
-                        frameOverlay.classList.remove('hidden');
-                    }
-                    if (slotSpan) slotSpan.classList.add('hidden');
-                }
-                
-                loadedCount++;
-                if (loadedCount === selectedFiles.length) {
-                    if (polaroidPhotos.filter(p => p).length === 4) {
-                        imageLoaded = true;
-                        processImageBtn.disabled = false;
-                        processImageBtn.className = "w-full bg-gradient-to-r from-rose-500 to-indigo-600 hover:from-rose-600 hover:to-indigo-700 text-white py-4 px-6 rounded-2xl font-bold text-sm transition-all duration-300 shadow-lg shadow-rose-500/20 hover:scale-[1.01] hover:shadow-xl hover:shadow-rose-500/30 cursor-pointer";
-                    } else {
-                        alert("Harap pilih/unggah tepat 4 foto untuk mode Polaroid.");
+                } catch (err) {
+                    console.error("Compression error:", err);
+                } finally {
+                    loadedCount++;
+                    if (loadedCount === selectedFiles.length) {
+                        if (polaroidPhotos.filter(p => p).length === 4) {
+                            imageLoaded = true;
+                            processImageBtn.disabled = false;
+                            processImageBtn.className = "w-full bg-gradient-to-r from-rose-500 to-indigo-600 hover:from-rose-600 hover:to-indigo-700 text-white py-4 px-6 rounded-2xl font-bold text-sm transition-all duration-300 shadow-lg shadow-rose-500/20 hover:scale-[1.01] hover:shadow-xl hover:shadow-rose-500/30 cursor-pointer";
+                        } else {
+                            alert("Harap pilih/unggah tepat 4 foto untuk mode Polaroid.");
+                        }
                     }
                 }
             };
@@ -881,6 +891,36 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
+
+    // Helper to compress base64 image client-side to keep payloads small
+    function compressImage(base64Str, maxWidth = 1080, maxHeight = 1080, quality = 0.8) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.src = base64Str;
+            img.onload = () => {
+                let width = img.naturalWidth;
+                let height = img.naturalHeight;
+                
+                if (width > maxWidth || height > maxHeight) {
+                    if (width > height) {
+                        height = Math.round((height * maxWidth) / width);
+                        width = maxWidth;
+                    } else {
+                        width = Math.round((width * maxHeight) / height);
+                        height = maxHeight;
+                    }
+                }
+                
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                resolve(canvas.toDataURL('image/jpeg', quality));
+            };
+            img.onerror = (err) => reject(new Error("Gagal mengompresi gambar"));
+        });
+    }
 
     // Helper to convert base64 to Blob
     function dataURLtoBlob(dataurl) {
