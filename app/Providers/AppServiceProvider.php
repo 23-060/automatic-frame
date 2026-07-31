@@ -12,19 +12,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         if (env('VERCEL')) {
-            $dbPath = '/tmp/database.sqlite';
-            if (!file_exists($dbPath)) {
-                touch($dbPath);
-                config(['database.connections.sqlite.database' => $dbPath]);
-                
-                try {
-                    \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-                } catch (\Exception $e) {
-                    \Illuminate\Support\Facades\Log::error('Vercel Migration Error: ' . $e->getMessage());
-                }
-            } else {
-                config(['database.connections.sqlite.database' => $dbPath]);
-            }
+            config(['database.connections.sqlite.database' => '/tmp/database.sqlite']);
         }
     }
 
@@ -33,6 +21,19 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        if (env('VERCEL')) {
+            $dbPath = '/tmp/database.sqlite';
+            if (!file_exists($dbPath) || filesize($dbPath) === 0) {
+                if (!file_exists($dbPath)) {
+                    touch($dbPath);
+                }
+                
+                try {
+                    \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::error('Vercel Migration Error: ' . $e->getMessage());
+                }
+            }
+        }
     }
 }
