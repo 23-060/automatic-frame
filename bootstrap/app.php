@@ -1,5 +1,19 @@
 <?php
 
+if (env('VERCEL') || isset($_SERVER['VERCEL'])) {
+    $_ENV['APP_SERVICES_CACHE'] = '/tmp/services.php';
+    $_ENV['APP_PACKAGES_CACHE'] = '/tmp/packages.php';
+    $_ENV['APP_CONFIG_CACHE'] = '/tmp/config.php';
+    $_ENV['APP_ROUTES_CACHE'] = '/tmp/routes.php';
+    $_ENV['APP_EVENTS_CACHE'] = '/tmp/events.php';
+    
+    putenv('APP_SERVICES_CACHE=/tmp/services.php');
+    putenv('APP_PACKAGES_CACHE=/tmp/packages.php');
+    putenv('APP_CONFIG_CACHE=/tmp/config.php');
+    putenv('APP_ROUTES_CACHE=/tmp/routes.php');
+    putenv('APP_EVENTS_CACHE=/tmp/events.php');
+}
+
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
