@@ -1,1 +1,1 @@
-*.sqlite*
+# Allow tracking database.sqlite

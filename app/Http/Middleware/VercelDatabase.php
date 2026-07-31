@@ -18,14 +18,11 @@ class VercelDatabase
         if (env('VERCEL')) {
             $dbPath = '/tmp/database.sqlite';
             if (!file_exists($dbPath) || filesize($dbPath) === 0) {
-                if (!file_exists($dbPath)) {
+                $templatePath = database_path('database.sqlite');
+                if (file_exists($templatePath)) {
+                    copy($templatePath, $dbPath);
+                } else {
                     touch($dbPath);
-                }
-                
-                try {
-                    Artisan::call('migrate', ['--force' => true]);
-                } catch (\Exception $e) {
-                    Log::error('Vercel Migration Error: ' . $e->getMessage());
                 }
             }
         }
