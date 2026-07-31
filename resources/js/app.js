@@ -168,9 +168,18 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             
             webcamStream.srcObject = localStream;
-            webcamStream.classList.remove('hidden');
             previewPhoto.classList.add('hidden');
             placeholderMsg.classList.add('hidden');
+            
+            if (currentMode === 'polaroid') {
+                polaroidSnapCount = 0;
+                updatePolaroidActiveCameraSlot();
+            } else {
+                if (webcamStream.parentElement !== editorStage) {
+                    editorStage.appendChild(webcamStream);
+                }
+                webcamStream.classList.remove('hidden');
+            }
             
             if (currentFacingMode === 'user') {
                 webcamStream.classList.add('transform', 'scale-x-[-1]');
@@ -343,6 +352,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 countdownOverlay.classList.add('hidden');
 
                 if (polaroidSnapCount < 4) {
+                    // Update camera position to next slot
+                    updatePolaroidActiveCameraSlot();
+
                     // Re-enable button for the next shot
                     snapCameraBtn.disabled = false;
                     snapCameraBtn.className = "flex-1 bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold py-3 px-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer";
@@ -383,6 +395,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (localStream) {
             localStream.getTracks().forEach(track => track.stop());
             localStream = null;
+        }
+        if (webcamStream.parentElement !== editorStage) {
+            editorStage.appendChild(webcamStream);
         }
         webcamStream.srcObject = null;
         webcamStream.classList.add('hidden');
@@ -516,7 +531,22 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function updatePolaroidActiveCameraSlot() {
+        if (currentMode === 'polaroid' && localStream) {
+            const activeSlotDiv = document.querySelector(`[data-slot="${polaroidSnapCount}"]`);
+            if (activeSlotDiv) {
+                activeSlotDiv.appendChild(webcamStream);
+                webcamStream.classList.remove('hidden');
+                const slotSpan = activeSlotDiv.querySelector('span');
+                if (slotSpan) slotSpan.classList.add('hidden');
+            }
+        }
+    }
+
     function resetPolaroidSlots() {
+        if (webcamStream.parentElement !== editorStage) {
+            editorStage.appendChild(webcamStream);
+        }
         for (let i = 0; i < 4; i++) {
             const slotDiv = document.querySelector(`[data-slot="${i}"]`);
             if (slotDiv) {

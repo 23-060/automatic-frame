@@ -163,9 +163,8 @@
                         <!-- Camera Control Overlay (Active only when camera is streaming) -->
                         <div id="camera-controls-overlay" class="hidden absolute bottom-4 inset-x-4 flex justify-between gap-3 z-30">
                             <button type="button" id="switch-camera-btn" class="bg-slate-950/80 hover:bg-slate-900 text-white rounded-2xl p-3.5 border border-slate-800 backdrop-blur shadow flex items-center justify-center cursor-pointer">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18.82M4 30h8a2 2 0 002-2V14a2 2 0 00-2-2H4a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 4v6h-6M5 20v-6h6M19 19a9 9 0 00-9-9M5 5a9 9 0 009 9" />
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="h-5 w-5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
                                 </svg>
                             </button>
                             <button type="button" id="snap-overlay-btn" class="flex-1 bg-rose-500 hover:bg-rose-600 text-white font-bold py-3.5 px-6 rounded-2xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-rose-500/30 cursor-pointer">
