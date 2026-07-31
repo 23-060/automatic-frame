@@ -214,7 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tempCtx.scale(-1, 1);
             tempCtx.drawImage(webcamStream, 0, 0, videoWidth, videoHeight);
             
-            const dataUrl = tempCanvas.toDataURL('image/png');
+            const dataUrl = tempCanvas.toDataURL('image/jpeg', 0.85);
             
             // Set preview photo
             previewPhoto.src = dataUrl;
@@ -268,7 +268,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 tempCtx.scale(-1, 1);
                 tempCtx.drawImage(webcamStream, 0, 0, videoWidth, videoHeight);
 
-                const dataUrl = tempCanvas.toDataURL('image/png');
+                const dataUrl = tempCanvas.toDataURL('image/jpeg', 0.85);
                 polaroidPhotos[polaroidSnapCount] = dataUrl;
 
                 // Update Slot UI
@@ -724,7 +724,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
 
                 // Save collage base64
-                framedBase64 = offscreenCanvas.toDataURL('image/png');
+                framedBase64 = offscreenCanvas.toDataURL('image/jpeg', 0.85);
 
                 // Zip raw photos + collage client-side
                 const zip = new JSZip();
@@ -761,11 +761,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 ctx.drawImage(previewPhoto, -previewPhoto.naturalWidth / 2, -previewPhoto.naturalHeight / 2);
                 ctx.restore();
 
-                rawBase64 = offscreenCanvas.toDataURL('image/png');
+                rawBase64 = offscreenCanvas.toDataURL('image/jpeg', 0.85);
 
                 const frameImg = await loadImage(`/frames/${selectedFrame}`);
                 ctx.drawImage(frameImg, 0, 0, 1200, 1200);
-                framedBase64 = offscreenCanvas.toDataURL('image/png');
+                framedBase64 = offscreenCanvas.toDataURL('image/jpeg', 0.85);
             }
 
             // Post both assets to backend
