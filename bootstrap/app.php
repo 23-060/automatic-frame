@@ -48,6 +48,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
     })->create();
 
 if (env('VERCEL')) {
+    $app->useStoragePath('/tmp');
     $app->singleton(
         Illuminate\Contracts\Http\Kernel::class,
         Illuminate\Foundation\Http\Kernel::class
