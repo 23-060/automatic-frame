@@ -9,27 +9,27 @@
     "routes": [
         {
             "src": "/build/(.*)",
-            "dest": "/public/build/$1"
+            "dest": "/build/$1"
         },
         {
             "src": "/logo/(.*)",
-            "dest": "/public/logo/$1"
+            "dest": "/logo/$1"
         },
         {
             "src": "/qr-code/(.*)",
-            "dest": "/public/qr-code/$1"
+            "dest": "/qr-code/$1"
         },
         {
             "src": "/frames/(.*)",
-            "dest": "/public/frames/$1"
+            "dest": "/frames/$1"
         },
         {
             "src": "/favicon.ico",
-            "dest": "/public/favicon.ico"
+            "dest": "/favicon.ico"
         },
         {
             "src": "/robots.txt",
-            "dest": "/public/robots.txt"
+            "dest": "/robots.txt"
         },
         {
             "src": "/(.*)",
