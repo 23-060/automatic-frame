@@ -53,6 +53,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const polaroidPreviewStage = document.getElementById('polaroid-preview-stage');
     const countdownOverlay = document.getElementById('countdown-overlay');
     const countdownNumber = document.getElementById('countdown-number');
+    
+    // Camera Control Overlay elements
+    const cameraControlsOverlay = document.getElementById('camera-controls-overlay');
+    const switchCameraBtn = document.getElementById('switch-camera-btn');
+    const snapOverlayBtn = document.getElementById('snap-overlay-btn');
+    const snapOverlayBtnText = document.getElementById('snap-overlay-btn-text');
+    const stopCameraOverlayBtn = document.getElementById('stop-camera-overlay-btn');
 
     // --- Application State ---
     let currentTab = 'upload'; // 'upload' | 'camera'
@@ -67,8 +74,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let panX = 0;
     let panY = 0;
     
-    // Webcam stream variable
+    // Webcam stream variables
     let localStream = null;
+    let currentFacingMode = 'user'; // 'user' (front) | 'environment' (back)
     
     // Polaroid photos array (max 4 base64 images)
     let polaroidPhotos = [];
@@ -149,13 +157,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- Camera Logic ---
-    startCameraBtn.addEventListener('click', async () => {
+    async function startCamera() {
         try {
             // Stop any existing stream
             stopCamera();
             
             localStream = await navigator.mediaDevices.getUserMedia({
-                video: { width: 1080, height: 1080, facingMode: "user" },
+                video: { width: 1080, height: 1080, facingMode: currentFacingMode },
                 audio: false
             });
             
@@ -164,26 +172,43 @@ document.addEventListener('DOMContentLoaded', () => {
             previewPhoto.classList.add('hidden');
             placeholderMsg.classList.add('hidden');
             
+            if (currentFacingMode === 'user') {
+                webcamStream.classList.add('transform', 'scale-x-[-1]');
+            } else {
+                webcamStream.classList.remove('transform', 'scale-x-[-1]');
+            }
+            
+            // Show overlay controls
+            cameraControlsOverlay.classList.remove('hidden');
+            
+            // Enable snap buttons
             snapCameraBtn.disabled = false;
             snapCameraBtn.className = "flex-1 bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold py-3 px-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer";
             
+            snapOverlayBtn.disabled = false;
+            snapOverlayBtn.className = "flex-1 bg-rose-500 hover:bg-rose-600 text-white font-bold py-3.5 px-6 rounded-2xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-rose-500/30 cursor-pointer";
+
             if (currentMode === 'polaroid') {
                 polaroidSnapCount = 0;
+                const snapText = `Ambil Foto 1 (0/4)`;
                 snapCameraBtn.innerHTML = `
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
-                    Ambil Foto 1 (0/4)
+                    ${snapText}
                 `;
+                snapOverlayBtnText.textContent = snapText;
             } else {
+                const snapText = "Ambil Foto";
                 snapCameraBtn.innerHTML = `
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
-                    Ambil Foto
+                    ${snapText}
                 `;
+                snapOverlayBtnText.textContent = snapText;
             }
             
             startCameraBtn.textContent = "Restart Kamera";
@@ -191,6 +216,24 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("Camera access failed:", error);
             alert("Gagal mengakses kamera. Harap pastikan izin kamera diberikan.");
         }
+    }
+
+    startCameraBtn.addEventListener('click', startCamera);
+
+    switchCameraBtn.addEventListener('click', async () => {
+        currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+        await startCamera();
+    });
+
+    snapOverlayBtn.addEventListener('click', () => {
+        if (!snapOverlayBtn.disabled) {
+            snapCameraBtn.click();
+        }
+    });
+
+    stopCameraOverlayBtn.addEventListener('click', () => {
+        stopCamera();
+        resetEditor();
     });
 
     snapCameraBtn.addEventListener('click', () => {
@@ -209,9 +252,11 @@ document.addEventListener('DOMContentLoaded', () => {
             tempCanvas.height = videoHeight;
             const tempCtx = tempCanvas.getContext('2d');
             
-            // Draw video frame to canvas (flipped horizontally for user mirror effect)
-            tempCtx.translate(videoWidth, 0);
-            tempCtx.scale(-1, 1);
+            // Draw video frame to canvas (flipped horizontally for user mirror effect only)
+            if (currentFacingMode === 'user') {
+                tempCtx.translate(videoWidth, 0);
+                tempCtx.scale(-1, 1);
+            }
             tempCtx.drawImage(webcamStream, 0, 0, videoWidth, videoHeight);
             
             const dataUrl = tempCanvas.toDataURL('image/jpeg', 0.85);
@@ -235,9 +280,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function captureSinglePolaroidShot() {
         if (polaroidSnapCount >= 4) return;
 
-        // Disable snap button during countdown
+        // Disable snap buttons during countdown
         snapCameraBtn.disabled = true;
         snapCameraBtn.className = "flex-1 bg-slate-900 border border-slate-800 text-slate-500 text-sm font-semibold py-3 px-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 cursor-not-allowed";
+
+        snapOverlayBtn.disabled = true;
+        snapOverlayBtn.className = "flex-1 bg-slate-900 border border-slate-800 text-slate-500 font-bold py-3.5 px-6 rounded-2xl transition-all duration-200 flex items-center justify-center gap-2 cursor-not-allowed";
 
         countdownOverlay.classList.remove('hidden');
 
@@ -264,8 +312,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 tempCanvas.width = videoWidth;
                 tempCanvas.height = videoHeight;
                 const tempCtx = tempCanvas.getContext('2d');
-                tempCtx.translate(videoWidth, 0);
-                tempCtx.scale(-1, 1);
+                
+                if (currentFacingMode === 'user') {
+                    tempCtx.translate(videoWidth, 0);
+                    tempCtx.scale(-1, 1);
+                }
                 tempCtx.drawImage(webcamStream, 0, 0, videoWidth, videoHeight);
 
                 const dataUrl = tempCanvas.toDataURL('image/jpeg', 0.85);
@@ -295,13 +346,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Re-enable button for the next shot
                     snapCameraBtn.disabled = false;
                     snapCameraBtn.className = "flex-1 bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold py-3 px-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer";
+                    const snapText = `Ambil Foto ${polaroidSnapCount + 1} (${polaroidSnapCount}/4)`;
                     snapCameraBtn.innerHTML = `
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
-                        Ambil Foto ${polaroidSnapCount + 1} (${polaroidSnapCount}/4)
+                        ${snapText}
                     `;
+                    
+                    snapOverlayBtn.disabled = false;
+                    snapOverlayBtn.className = "flex-1 bg-rose-500 hover:bg-rose-600 text-white font-bold py-3.5 px-6 rounded-2xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-rose-500/30 cursor-pointer";
+                    snapOverlayBtnText.textContent = snapText;
                 } else {
                     // All 4 shots captured!
                     stopCamera();
@@ -330,8 +386,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         webcamStream.srcObject = null;
         webcamStream.classList.add('hidden');
+        cameraControlsOverlay.classList.add('hidden'); // Hide overlay
+        
         snapCameraBtn.disabled = true;
         snapCameraBtn.className = "flex-1 bg-slate-900 border border-slate-800 text-slate-500 text-sm font-semibold py-3 px-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 cursor-not-allowed";
+        
+        snapOverlayBtn.disabled = true;
+        snapOverlayBtn.className = "flex-1 bg-slate-900 border border-slate-800 text-slate-500 font-bold py-3.5 px-6 rounded-2xl transition-all duration-200 flex items-center justify-center gap-2 cursor-not-allowed";
+        
         startCameraBtn.innerHTML = `
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 00-2 2z" />

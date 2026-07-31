@@ -160,6 +160,28 @@
                         <!-- Video stream for Camera Tab -->
                         <video id="webcam-stream" autoplay playsinline class="hidden w-full h-full object-cover absolute inset-0 transform scale-x-[-1]"></video>
                         
+                        <!-- Camera Control Overlay (Active only when camera is streaming) -->
+                        <div id="camera-controls-overlay" class="hidden absolute bottom-4 inset-x-4 flex justify-between gap-3 z-30">
+                            <button type="button" id="switch-camera-btn" class="bg-slate-950/80 hover:bg-slate-900 text-white rounded-2xl p-3.5 border border-slate-800 backdrop-blur shadow flex items-center justify-center cursor-pointer">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18.82M4 30h8a2 2 0 002-2V14a2 2 0 00-2-2H4a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 4v6h-6M5 20v-6h6M19 19a9 9 0 00-9-9M5 5a9 9 0 009 9" />
+                                </svg>
+                            </button>
+                            <button type="button" id="snap-overlay-btn" class="flex-1 bg-rose-500 hover:bg-rose-600 text-white font-bold py-3.5 px-6 rounded-2xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-rose-500/30 cursor-pointer">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <circle cx="12" cy="12" r="3" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                </svg>
+                                <span id="snap-overlay-btn-text">Ambil Foto</span>
+                            </button>
+                            <button type="button" id="stop-camera-overlay-btn" class="bg-slate-950/80 hover:bg-slate-900 text-white rounded-2xl p-3.5 border border-slate-800 backdrop-blur shadow flex items-center justify-center cursor-pointer">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        
                         <!-- Image render container for Upload Tab -->
                         <div id="photo-container" class="absolute inset-0 flex items-center justify-center origin-center select-none pointer-events-none">
                             <img id="preview-photo" src="" class="hidden max-w-none origin-center transform" style="transform: translate(0px, 0px) scale(1) rotate(0deg);">
