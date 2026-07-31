@@ -16,24 +16,8 @@ class AppServiceProvider extends ServiceProvider
         }
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
-        if (env('VERCEL')) {
-            $dbPath = '/tmp/database.sqlite';
-            if (!file_exists($dbPath) || filesize($dbPath) === 0) {
-                if (!file_exists($dbPath)) {
-                    touch($dbPath);
-                }
-                
-                try {
-                    \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-                } catch (\Exception $e) {
-                    \Illuminate\Support\Facades\Log::error('Vercel Migration Error: ' . $e->getMessage());
-                }
-            }
-        }
+        //
     }
 }
