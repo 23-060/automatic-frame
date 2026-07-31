@@ -17,6 +17,17 @@ $app = Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->render(function (\Throwable $e) {
+            if (env('VERCEL')) {
+                header('Content-Type: text/plain');
+                echo "PRIMARY EXCEPTION:\n";
+                echo "Class: " . get_class($e) . "\n";
+                echo "Message: " . $e->getMessage() . "\n";
+                echo "File: " . $e->getFile() . ":" . $e->getLine() . "\n\n";
+                echo "Trace:\n" . $e->getTraceAsString() . "\n";
+                exit(1);
+            }
+        });
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*'),
         );
